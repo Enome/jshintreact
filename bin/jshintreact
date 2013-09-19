@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+"use strict";
+
+var fs = require('fs');
+var temp = require('temp');
+var transform = require("react-tools").transform;
+
+var index, file, i, argv = process.argv;
+
+for (i = 2; i < argv.length; i += 1) {
+
+  if (argv[i].charAt(0) !== '-') {
+    file = argv[i]; 
+    index = i;
+  }
+
+}
+
+if (typeof file === 'undefined') {
+  require('../node_modules/jshint/src/cli').interpret(argv);
+}
+
+var original = fs.readFileSync(file).toString();
+
+// Transform and clean up spaces
+var transformed = transform(original).replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').replace(/:/g, ': ');
+
+temp.track();
+
+temp.open('reactjs-', function (err, info) {
+
+  fs.write(info.fd, transformed);
+
+  /* Horrible code: this patches the reporter to use original file paths */
+  var def = require('../node_modules/jshint/src/reporters/default');
+  var backup = def.reporter;
+
+  def.reporter = function (results) {
+    results.forEach(function (result) {
+      result.file = file;
+    });
+
+    backup.apply(backup, Array.prototype.slice.call(arguments));
+  };
+
+  argv.splice(index, 1, info.path);
+
+  require('../node_modules/jshint/src/cli').interpret(argv);
+});
