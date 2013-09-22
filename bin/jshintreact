@@ -17,14 +17,18 @@ for (i = 2; i < argv.length; i += 1) {
 }
 
 if (typeof file === 'undefined') {
-  require('../node_modules/jshint/src/cli').interpret(argv);
+  return require('../node_modules/jshint/src/cli').interpret(argv);
 }
 
 var original = fs.readFileSync(file).toString();
 
-// Transform and clean up spaces
-var transformed = transform(original).replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').replace(/:/g, ': ');
+try {
+  var transformed = transform(original);
+} catch (e) {
+  return require('../node_modules/jshint/src/cli').interpret(argv);
+}
 
+transformed = transformed.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').replace(/:/g, ': ');
 temp.track();
 
 temp.open('reactjs-', function (err, info) {

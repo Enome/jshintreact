@@ -1,6 +1,6 @@
 {
   "name": "jshintreact",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Wrapper arround jshint to deal with jsx code in react.js",
   "dependencies": {
     "jshint": "~2.1.10",
